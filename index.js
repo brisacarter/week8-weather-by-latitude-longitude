@@ -27,7 +27,8 @@ app.post("/", function (req, res) {
   console.log(req.body.latInput);
 
   // Build up the URL for the JSON query
-  const units = "imperial";
+  const units = "metric";
+
   const apiKey = mySecret;
   const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latInput}&lon=${longInput}&units=${units}&appid=${apiKey}`;
 
@@ -39,28 +40,40 @@ app.post("/", function (req, res) {
       const weatherData = JSON.parse(data);
       if (weatherData.cod === 200) {
         const temp = weatherData.main.temp;
+        //Convert to imperial
+        let tempImperial = (parseInt(temp) * 9/5 +32);
         const feels_like = weatherData.main.feels_like;
+        let feelsLikeImperial = (parseInt(feels_like) * 9/5 +32);
         const city = weatherData.name;
         const humidity = weatherData.main.humidity;
         const speed = weatherData.wind.speed;
+        //convert speed to mph, rounding to 2 decimal places
+        let speedMph = ((parseInt(speed) * 2.23694).toFixed(2));
+        
         const cloudiness = weatherData.clouds.all;
         const weatherDescription = weatherData.weather[0].description;
         const icon = weatherData.weather[0].icon;
         const imageURL = "http://openweathermap.org/img/wn/" + icon + "@2x.png";
-
+        //Convert to decimal
+ let decHumidity = humidity/100;
+ let decCloudiness = cloudiness/100;
         // Displays the output of the results
         res.write(`<h1>The weather is ${weatherDescription}</h1>`);
         res.write(`<img src=${imageURL}>`);
         res.write(
-          `<h2>The Temperature in ${city} is ${temp} &deg;F, and it feels like ${feels_like} &deg;F.</h2>`,
+          `<h2>The Temperature in ${city} is ${temp} &deg;C (${tempImperial}&deg;F).</h2>`,
         );
+        res.write(
+          `<h2>It feels like ${feels_like} &deg;C (${feelsLikeImperial}&deg;F).</h2>`
+        );
+
       
-        res.write(`<h2>The Humidity is ${humidity} %.</h2>`);
+        res.write(`<h2>The Humidity is ${humidity} % (${decHumidity}).</h2>`);
         res.write(
-          `<h2>The Wind Speed is ${speed} mph.</h2>`,
+          `<h2>The Wind Speed is ${speed} meter/sec (${speedMph} mph).</h2>`,
         );
         res.write(
-          `<h2>The Cloudiness is  ${cloudiness} %.</h2>`,
+          `<h2>The Cloudiness is  ${cloudiness} % (${decCloudiness}).</h2>`,
         );
 
         res.send();
